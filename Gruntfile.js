@@ -187,12 +187,12 @@ module.exports = function (grunt) {
             }
         },
         "build": {
-            "name"              : "Brackets",
+            "name"              : "Deskshell-Brackets",//"Brackets",
             "staging"           : staging
         },
         "git": {
             "www": {
-                "repo"      : "../brackets",    // TODO user configurable?
+                "repo"      : "../deskshell-brackets-app",    // TODO user configurable?
                 "branch"    : grunt.option("www-branch") || ""
             },
             "shell": {
