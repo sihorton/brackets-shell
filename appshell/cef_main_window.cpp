@@ -111,16 +111,26 @@ BOOL cef_main_window::Create()
 
     LoadWindowRestoreRect(left, top, width, height, showCmd);
 
-    DWORD styles =  WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_EX_COMPOSITED;
-
-    if (showCmd == SW_MAXIMIZE)
-      styles |= WS_MAXIMIZE;
-
-    if (!cef_host_window::Create(::kWindowClassname, GetBracketsWindowTitleText(),
+    
+#ifdef FRAMELESS
+	DWORD styles = WS_POPUP|WS_VISIBLE|WS_SYSMENU|WS_SIZEBOX;
+	if (!cef_host_window::Create(::kWindowClassname, 0,
                                 styles, left, top, width, height))
     {
         return FALSE;
     }
+#else
+	DWORD styles =  WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_EX_COMPOSITED;
+	if (showCmd == SW_MAXIMIZE)
+      styles |= WS_MAXIMIZE;
+	if (!cef_host_window::Create(::kWindowClassname, GetBracketsWindowTitleText(),
+                                styles, left, top, width, height))
+    {
+        return FALSE;
+    }
+#endif
+    //
+    
 
     RestoreWindowPlacement(showCmd);
     UpdateWindow();

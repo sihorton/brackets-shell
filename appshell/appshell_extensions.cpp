@@ -87,7 +87,64 @@ public:
                 error = OpenLiveBrowser(argURL, enableRemoteDebugging);
             }
             
-        } else if (message_name == "CloseLiveBrowser") {
+//si: added own native function with callback:
+
+//appshell.callbackTest("hi",function(err,echo,cString) {
+//	if (err) {
+//		console.error(err);
+//	} else {
+//		console.log(echo,cString);
+//	}
+//});
+
+        } else if (message_name == "callbackTest") {
+            if (argList->GetSize() > 0) {
+               CefString test = "c says hi";
+               //position 1 is always err i.e. if there was an error that occured.
+			   //code after all of the if statements writes over position 1 with the error number (constant)
+			   //so start from position 2 for any data you return.
+				responseArgs->SetString(2,argList->GetString(1));
+				responseArgs->SetString(3,test);	
+            }
+        } else if (message_name == "echo") {
+                responseArgs->SetString(2, argList->GetString(1));
+       
+		
+		} else if (message_name == "SetRoundedCorners") {
+            // Parameters:
+            //  0: int32 - callback id
+            //  1: int - x
+            //  2: int - y
+            //  3: int - width
+            //  4: int - height
+            //  5: int - ellipse_width
+            //  6: int - ellipse_height
+            if (argList->GetSize() != 8||
+                argList->GetType(1) != VTYPE_INT||
+                argList->GetType(2) != VTYPE_INT||
+                argList->GetType(3) != VTYPE_INT||
+                argList->GetType(4) != VTYPE_INT||
+                argList->GetType(5) != VTYPE_INT||
+                argList->GetType(6) != VTYPE_INT||
+                argList->GetType(7) != VTYPE_BOOL
+                ) {
+                error = ERR_INVALID_PARAMS;
+                ExtensionString message = CefString("error :(");
+            }
+            if (error == NO_ERROR) {
+                int x = argList->GetInt(1);
+                int y = argList->GetInt(2);
+                int width = argList->GetInt(3);
+                int height = argList->GetInt(4);
+                int ellipse_width = argList->GetInt(5);
+                int ellipse_height = argList->GetInt(6);
+                bool redraw = argList->GetBool(7);
+                SetRoundedCorners(browser, x, y, width, height, ellipse_width, ellipse_height, redraw);
+            }
+        
+        
+		
+		} else if (message_name == "CloseLiveBrowser") {
             // Parameters
             //  0: int32 - callback id
             if (argList->GetSize() != 1) {
@@ -362,6 +419,7 @@ public:
             
             ExtensionString url(browser->GetHost()->GetDevToolsURL(true));
             OpenLiveBrowser(url, false);
+
         } else if (message_name == "GetNodeState") {
             // Parameters:
             //  0: int32 - callback id

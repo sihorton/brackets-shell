@@ -72,6 +72,9 @@ inline void* getMenuParent(CefRefPtr<CefBrowser>browser) {
 // and appshell_extensions_win.cpp
 int32 OpenLiveBrowser(ExtensionString argURL, bool enableRemoteDebugging);
 
+void SetRoundedCorners(CefRefPtr<CefBrowser> browser, int x, int y, int width, int height, int ellipse_width, int ellipse_height, bool redraw);
+
+
 void CloseLiveBrowser(CefRefPtr<CefBrowser> browser, CefRefPtr<CefProcessMessage> response);
 
 int32 OpenURLInDefaultBrowser(ExtensionString url);

@@ -29,6 +29,12 @@
 #include "cef_registry.h"
 #include "cef_main_window.h"
 
+//si try to read json..
+//#include "Jzon.h"
+#include <iostream>
+#include <fstream>
+#include "JSON.h"
+
 // Global Variables:
 DWORD            g_appStartupTime;
 HINSTANCE        hInst;                     // current instance
@@ -174,6 +180,96 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
   // Populate the settings based on command line arguments.
   AppGetSettings(settings, app);
 
+  
+	//si: read some json.
+	
+	// get exe filename, strip the .exe filename (and preceding "\") from the appPath
+	// and store in pathRoot2
+	wchar_t appPath2[MAX_PATH];
+	wchar_t *pathRoot2;
+	GetModuleFileName(NULL, appPath2, MAX_PATH);
+	pathRoot2 = wcsrchr(appPath2, '\\');
+	wcscpy(pathRoot2, L"\\Deskshell-Brackets.json");
+	char appPathJsonString[MAX_PATH];
+	wcstombs(appPathJsonString,appPath2,MAX_PATH);
+	std::string s;
+	{
+		std::ifstream file (appPath2,std::ios::binary);
+		if (file) {
+				std::ostringstream os;
+				os << file.rdbuf();
+				s = os.str();
+		}
+	}
+
+	const wchar_t* EXAMPLE = L"\
+{ \
+	\"string_name\" : \"string\tvalue and a \\\"quote\\\" and a unicode char \\u00BE and a c:\\\\path\\\\ or a \\/unix\\/path\\/ :D\", \
+	\"bool_name\" : true, \
+	\"bool_second\" : FaLsE, \
+	\"null_name\" : nULl, \
+	\"negative\" : -34.276, \
+	\"sub_object\" : { \
+						\"foo\" : \"abc\", \
+						 \"bar\" : 1.35e2, \
+						 \"blah\" : { \"a\" : \"A\", \"b\" : \"B\", \"c\" : \"C\" } \
+					}, \
+	\"array_letters\" : [ \"a\", \"b\", \"c\", [ 1, 2, 3  ]  ] \
+}    ";
+
+	JSONValue *config = JSON::Parse(s.c_str());
+	//JSONValue *value = JSON::Parse( EXAMPLE );
+	// Did it go wrong?
+	if (config == NULL)
+	{
+		OutputDebugString(L"Example code failed to parse, did you change it?\r\n");
+	}
+	else
+	{
+		OutputDebugString(L"Parse gave no errors");
+		// Retrieve the main object
+		JSONObject root;
+		if (config->IsObject() == false)
+		{
+			OutputDebugString(L"The root element is not an object, did you change the example?\r\n");
+		}
+		else
+		{
+			root = config->AsObject();
+			
+			// Retrieving a string
+			if (root.find(L"string_name") != root.end() && root[L"string_name"]->IsString())
+			{
+				OutputDebugString(L"string_name:\r\n");
+				OutputDebugString(L"------------\r\n");
+				OutputDebugString(root[L"string_name"]->AsString().c_str());
+				OutputDebugString(L"\r\n\r\n");
+			}
+		}
+	}
+
+/*	
+	//fileReader seems to return false even if it reads ok.
+	//current code will give exception if json file is not found :-(
+	Jzon::Object configNode;
+	bool readResult = Jzon::FileReader::ReadFile(appPathJsonString, configNode);
+	bool returned;
+	if (readResult) {
+		returned = true;
+	} else {
+		returned = false;
+	}
+	
+	//CefString testStr = cef_str(configNode.Get("text2").ToString());
+	//std::wstring text2 = configNode.Get("textMissing2").ToWString();//crash!
+	//std::string appLoc
+	//std::wstring appLocW;
+	//std::string text2 = rootNode.Get("text2").ToString();
+	//appLoc = rootNode.Get("appLocation").ToString();
+	//appLocW = std::wstring(appLoc.begin(), appLoc.end());
+	//appLocW = rootNode.Get("appLocation").ToWString();
+*/	
+
   // Check command
   if (CefString(&settings.cache_path).length() == 0) {
 	  CefString(&settings.cache_path) = AppGetCachePath();
@@ -200,8 +296,10 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	pathRoot = wcsrchr(appPath, '\\');
 
 	// Look for .\dev\src\index.html first
-	wcscpy(pathRoot, L"\\dev\\src\\index.html");
-
+	wcscpy(pathRoot, L"\\..\\..\\deskshell-brackets-app\\index.htm");
+	//wcscpy(pathRoot, appLocW.c_str());
+	//wcscpy(pathRoot, configNode.Get("appLocation").ToWString().c_str());
+	
 	// If the file exists, use it
 	if (GetFileAttributes(appPath) != INVALID_FILE_ATTRIBUTES) {
 		wcscpy(szInitialUrl, appPath);

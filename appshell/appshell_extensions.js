@@ -161,7 +161,30 @@ if (!appshell.app) {
                              fileTypes ? fileTypes.join(' ') : '');
         }, 10);
     };
-    
+//si: first own function..
+native function siTest();
+appshell.siTest = function() {
+    return true;
+}
+//si: echo function...
+native function echo();
+appshell.echo = function(str) {
+    return echo(str);
+}
+native function callbackTest();
+appshell.callbackTest = function(str,callback) {
+	return callbackTest(callback,str);
+}
+
+    /**
+      * Set window to have rounded corners.
+      * http://bigdevblog.com/  Modifying Adobe brackets (CEF) to have rounded corners in windows
+	  */
+	native function SetRoundedCorners();
+	appshell.app.setRoundedCorners = function (x, y, width, height, ellipse_width, ellipse_height, redraw, callback) {
+		SetRoundedCorners(callback, x, y, width, height, ellipse_width, ellipse_height, redraw);
+	} 
+
     /**
       * Display the OS Save dialog, allowing the user to provide a path and name to save a file.
       *

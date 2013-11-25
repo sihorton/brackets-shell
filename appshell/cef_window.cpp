@@ -130,7 +130,7 @@ static HWND _CefCreateWindow(LPCTSTR szClassname, LPCTSTR szWindowTitle, DWORD d
 
     HWND result = CreateWindow(szClassname, szWindowTitle, 
                                dwStyles, x, y, width, height, hWndParent, hMenu, hInst, (LPVOID)window);
-
+	
     _UnHookWindowCreate();
     return result;
 }
@@ -140,10 +140,14 @@ BOOL cef_window::Create(LPCTSTR szClassname, LPCTSTR szWindowTitle, DWORD dwStyl
 {
     HWND hWndParent = parent ? parent->mWnd : NULL;
     HMENU hMenu = NULL;
-
-    HWND hWndThis = ::_CefCreateWindow(szClassname, szWindowTitle, 
+#ifdef FRAMELESS
+	dwStyles = 0;
+    HWND hWndThis = ::_CefCreateWindow(szClassname, 0, 
                                         dwStyles, x, y, width, height, hWndParent, hMenu, this);
-
+#else
+	HWND hWndThis = ::_CefCreateWindow(szClassname, szWindowTitle, 
+                                        dwStyles, x, y, width, height, hWndParent, hMenu, this);
+#endif
     return hWndThis && hWndThis == mWnd;
 }
 

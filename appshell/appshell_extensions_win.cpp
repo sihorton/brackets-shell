@@ -363,6 +363,13 @@ int32 OpenLiveBrowser(ExtensionString argURL, bool enableRemoteDebugging)
     return NO_ERROR;
 }
 
+void SetRoundedCorners(CefRefPtr<CefBrowser> browser, int x, int y, int width, int height, int ellipse_width, int ellipse_height, bool redraw){
+    HRGN region = CreateRoundRectRgn(x, y, x + width, y + height, ellipse_width, ellipse_height);
+    CefWindowHandle hWnd = browser->GetHost()->GetWindowHandle();
+    SetWindowRgn(hWnd, region, redraw);
+}
+
+
 void CloseLiveBrowser(CefRefPtr<CefBrowser> browser, CefRefPtr<CefProcessMessage> response)
 {
     LiveBrowserMgrWin* liveBrowserMgr = LiveBrowserMgrWin::GetInstance();
@@ -1766,5 +1773,4 @@ void DragWindow(CefRefPtr<CefBrowser> browser) {
     SendMessage(browserHwnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
 }
     
-
 
