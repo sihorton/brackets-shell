@@ -20,10 +20,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 #include "cef_window.h"
-
+#include "JSON.h"
 // Externals
 extern HINSTANCE hInst;   
-
+//si
+extern JSONObject configRoot;
 // Constants
 static const wchar_t gCefClientWindowPropName[] = L"CefClientWindowPtr";
 
@@ -140,14 +141,36 @@ BOOL cef_window::Create(LPCTSTR szClassname, LPCTSTR szWindowTitle, DWORD dwStyl
 {
     HWND hWndParent = parent ? parent->mWnd : NULL;
     HMENU hMenu = NULL;
-#ifdef FRAMELESS
+
+	//si json config overrides.
+	if (configRoot.find(L"width") != configRoot.end() && configRoot[L"width"]->IsNumber()) {
+		width = (int) configRoot[L"width"]->AsNumber();
+	}
+	if (configRoot.find(L"height") != configRoot.end() && configRoot[L"height"]->IsNumber()) {
+		height = (int) configRoot[L"height"]->AsNumber();
+	}
+	if (configRoot.find(L"x") != configRoot.end() && configRoot[L"x"]->IsNumber()) {
+		x = (int) configRoot[L"x"]->AsNumber();
+	}
+	if (configRoot.find(L"y") != configRoot.end() && configRoot[L"y"]->IsNumber()) {
+		y = (int) configRoot[L"y"]->AsNumber();
+	}
+	if (configRoot.find(L"windowTitle") != configRoot.end() && configRoot[L"windowTitle"]->IsString()) {
+		szWindowTitle = configRoot[L"windowTitle"]->AsString().c_str();
+	}
+	if (configRoot.find(L"windowFrame") != configRoot.end() && configRoot[L"windowFrame"]->IsBool()) {
+		if (!configRoot[L"windowFrame"]->AsBool()) {
+			dwStyles = WS_POPUP|WS_VISIBLE|WS_SYSMENU|WS_SIZEBOX;
+		}
+	}
+/*#ifdef FRAMELESS
 	dwStyles = 0;
     HWND hWndThis = ::_CefCreateWindow(szClassname, 0, 
                                         dwStyles, x, y, width, height, hWndParent, hMenu, this);
-#else
+#else*/
 	HWND hWndThis = ::_CefCreateWindow(szClassname, szWindowTitle, 
                                         dwStyles, x, y, width, height, hWndParent, hMenu, this);
-#endif
+//#endif
     return hWndThis && hWndThis == mWnd;
 }
 

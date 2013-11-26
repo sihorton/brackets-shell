@@ -41,6 +41,8 @@ HINSTANCE        hInst;                     // current instance
 HACCEL           hAccelTable;
 std::wstring     gFilesToOpen;              // Filenames passed as arguments to app
 cef_main_window* gMainWnd = NULL;
+//si
+JSONObject configRoot;
 
 // static variables (not exported)
 static char      szWorkingDir[MAX_PATH];    // The current working directory
@@ -202,73 +204,38 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 		}
 	}
 
-	const wchar_t* EXAMPLE = L"\
-{ \
-	\"string_name\" : \"string\tvalue and a \\\"quote\\\" and a unicode char \\u00BE and a c:\\\\path\\\\ or a \\/unix\\/path\\/ :D\", \
-	\"bool_name\" : true, \
-	\"bool_second\" : FaLsE, \
-	\"null_name\" : nULl, \
-	\"negative\" : -34.276, \
-	\"sub_object\" : { \
-						\"foo\" : \"abc\", \
-						 \"bar\" : 1.35e2, \
-						 \"blah\" : { \"a\" : \"A\", \"b\" : \"B\", \"c\" : \"C\" } \
-					}, \
-	\"array_letters\" : [ \"a\", \"b\", \"c\", [ 1, 2, 3  ]  ] \
-}    ";
-
 	JSONValue *config = JSON::Parse(s.c_str());
-	//JSONValue *value = JSON::Parse( EXAMPLE );
+	
 	// Did it go wrong?
-	if (config == NULL)
+	if (config != NULL)
 	{
-		OutputDebugString(L"Example code failed to parse, did you change it?\r\n");
-	}
-	else
-	{
-		OutputDebugString(L"Parse gave no errors");
+		OutputDebugString(L"config parse ok");
 		// Retrieve the main object
-		JSONObject root;
 		if (config->IsObject() == false)
 		{
 			OutputDebugString(L"The root element is not an object, did you change the example?\r\n");
 		}
 		else
 		{
-			root = config->AsObject();
+			configRoot = config->AsObject();
 			
 			// Retrieving a string
-			if (root.find(L"string_name") != root.end() && root[L"string_name"]->IsString())
+			if (configRoot.find(L"string_name") != configRoot.end() && configRoot[L"string_name"]->IsString())
 			{
 				OutputDebugString(L"string_name:\r\n");
 				OutputDebugString(L"------------\r\n");
-				OutputDebugString(root[L"string_name"]->AsString().c_str());
+				OutputDebugString(configRoot[L"string_name"]->AsString().c_str());
 				OutputDebugString(L"\r\n\r\n");
+				OutputDebugString(configRoot[L"appLocation"]->AsString().c_str());
+				
 			}
 		}
-	}
-
-/*	
-	//fileReader seems to return false even if it reads ok.
-	//current code will give exception if json file is not found :-(
-	Jzon::Object configNode;
-	bool readResult = Jzon::FileReader::ReadFile(appPathJsonString, configNode);
-	bool returned;
-	if (readResult) {
-		returned = true;
 	} else {
-		returned = false;
+		const wchar_t* DEFAULT = L"{\"windowFrame\":true}"; 
+		
+		JSONValue *value = JSON::Parse( DEFAULT );
+		configRoot = config->AsObject();
 	}
-	
-	//CefString testStr = cef_str(configNode.Get("text2").ToString());
-	//std::wstring text2 = configNode.Get("textMissing2").ToWString();//crash!
-	//std::string appLoc
-	//std::wstring appLocW;
-	//std::string text2 = rootNode.Get("text2").ToString();
-	//appLoc = rootNode.Get("appLocation").ToString();
-	//appLocW = std::wstring(appLoc.begin(), appLoc.end());
-	//appLocW = rootNode.Get("appLocation").ToWString();
-*/	
 
   // Check command
   if (CefString(&settings.cache_path).length() == 0) {
@@ -296,9 +263,12 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	pathRoot = wcsrchr(appPath, '\\');
 
 	// Look for .\dev\src\index.html first
-	wcscpy(pathRoot, L"\\..\\..\\deskshell-brackets-app\\index.htm");
-	//wcscpy(pathRoot, appLocW.c_str());
-	//wcscpy(pathRoot, configNode.Get("appLocation").ToWString().c_str());
+	if (configRoot.find(L"appLocation") != configRoot.end() && configRoot[L"appLocation"]->IsString()) {	
+		wcscpy(pathRoot, configRoot[L"appLocation"]->AsString().c_str());
+	} else {
+		wcscpy(pathRoot, L"\\..\\..\\deskshell-brackets-app\\index.htm");
+	
+	}
 	
 	// If the file exists, use it
 	if (GetFileAttributes(appPath) != INVALID_FILE_ATTRIBUTES) {
