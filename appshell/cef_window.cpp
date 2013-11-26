@@ -163,14 +163,9 @@ BOOL cef_window::Create(LPCTSTR szClassname, LPCTSTR szWindowTitle, DWORD dwStyl
 			dwStyles = WS_POPUP|WS_VISIBLE|WS_SYSMENU|WS_SIZEBOX;
 		}
 	}
-/*#ifdef FRAMELESS
-	dwStyles = 0;
-    HWND hWndThis = ::_CefCreateWindow(szClassname, 0, 
-                                        dwStyles, x, y, width, height, hWndParent, hMenu, this);
-#else*/
 	HWND hWndThis = ::_CefCreateWindow(szClassname, szWindowTitle, 
                                         dwStyles, x, y, width, height, hWndParent, hMenu, this);
-//#endif
+
     return hWndThis && hWndThis == mWnd;
 }
 

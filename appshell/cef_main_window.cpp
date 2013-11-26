@@ -26,10 +26,12 @@
 #include "resource.h"
 #include "native_menu_model.h"
 #include "config.h"
-
+#include "JSON.h"
 // external
 extern HINSTANCE                hInst;
 extern CefRefPtr<ClientHandler> g_handler;
+//si
+extern JSONObject configRoot;
 
 // constants
 static const wchar_t        kWindowClassname[] = L"CEFCLIENT";
@@ -111,25 +113,39 @@ BOOL cef_main_window::Create()
 
     LoadWindowRestoreRect(left, top, width, height, showCmd);
 
-    
-#ifdef FRAMELESS
-	DWORD styles = WS_POPUP|WS_VISIBLE|WS_SYSMENU|WS_SIZEBOX;
-	if (!cef_host_window::Create(::kWindowClassname, 0,
-                                styles, left, top, width, height))
-    {
-        return FALSE;
-    }
-#else
-	DWORD styles =  WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_EX_COMPOSITED;
+    DWORD styles =  WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_EX_COMPOSITED;
+	LPCWSTR szTitle = GetBracketsWindowTitleText();
+	
+	//si json config overrides.
+	if (configRoot.find(L"width") != configRoot.end() && configRoot[L"width"]->IsNumber()) {
+		width = (int) configRoot[L"width"]->AsNumber();
+	}
+	if (configRoot.find(L"height") != configRoot.end() && configRoot[L"height"]->IsNumber()) {
+		height = (int) configRoot[L"height"]->AsNumber();
+	}
+	if (configRoot.find(L"x") != configRoot.end() && configRoot[L"x"]->IsNumber()) {
+		left = (int) configRoot[L"x"]->AsNumber();
+	}
+	if (configRoot.find(L"y") != configRoot.end() && configRoot[L"y"]->IsNumber()) {
+		top = (int) configRoot[L"y"]->AsNumber();
+	}
+	if (configRoot.find(L"windowTitle") != configRoot.end() && configRoot[L"windowTitle"]->IsString()) {
+		szTitle = configRoot[L"windowTitle"]->AsString().c_str();
+	}
+	if (configRoot.find(L"windowFrame") != configRoot.end() && configRoot[L"windowFrame"]->IsBool()) {
+		if (!configRoot[L"windowFrame"]->AsBool()) {
+			styles = WS_POPUP|WS_VISIBLE|WS_SYSMENU|WS_SIZEBOX;
+		}
+	}
+	
+
 	if (showCmd == SW_MAXIMIZE)
       styles |= WS_MAXIMIZE;
-	if (!cef_host_window::Create(::kWindowClassname, GetBracketsWindowTitleText(),
+	if (!cef_host_window::Create(::kWindowClassname, szTitle,
                                 styles, left, top, width, height))
     {
         return FALSE;
     }
-#endif
-    //
     
 
     RestoreWindowPlacement(showCmd);

@@ -145,6 +145,8 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
   // Parse command line arguments. The passed in values are ignored on Windows.
   AppInitCommandLine(0, NULL);
 
+  HANDLE hMutex = NULL;
+  /*
   // Determine if we should use an already running instance of Brackets.
   HANDLE hMutex = ::OpenMutex(MUTEX_ALL_ACCESS, FALSE, FIRST_INSTANCE_MUTEX_NAME);
   if ((hMutex != NULL) && AppGetCommandLine()->HasArguments() && (lpCmdLine != NULL)) {
@@ -171,7 +173,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	  }
 	  // otherwise, fall thru and launch a new instance
   }
-
+  */
   if (hMutex == NULL) {
 	  // first instance of this app, so create the mutex and continue execution of this instance.
 	  hMutex = ::CreateMutex(NULL, FALSE, FIRST_INSTANCE_MUTEX_NAME);
