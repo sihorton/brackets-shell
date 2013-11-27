@@ -113,8 +113,7 @@ public:
                 responseArgs->SetString(2, argList->GetString(1));
         } else if (message_name == "sendToNode") {
 			sendData(argList->GetString(1));
-			CefString m = "Sent";
-			responseArgs->SetString(2,"Sent Message");
+			responseArgs->SetString(2,"cef3.sendtoNode:");
 			responseArgs->SetString(3,argList->GetString(1));
 		} else if (message_name == "SetRoundedCorners") {
             // Parameters:
