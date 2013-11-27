@@ -74,8 +74,11 @@ void processCommand (const std::string &command) {
 		if (args[1] == "console") {
 			g_handler->GetBrowser()->GetMainFrame()->ExecuteJavaScript("console.log('"+args[0]+":"+args[2]+"');","nodejs/cmd/console",0);
 		}
+		if (args[1] == "json") {
+			g_handler->GetBrowser()->GetMainFrame()->ExecuteJavaScript("onMessage("+args[2]+");","nodejs/cmd/json",0);
+		}
 		if (args[1] == "execjs") {
-			g_handler->GetBrowser()->GetMainFrame()->ExecuteJavaScript(args[2],"nodejs/call",0);
+			g_handler->GetBrowser()->GetMainFrame()->ExecuteJavaScript(args[2],"nodejs/execjs",0);
 		}
     }
     

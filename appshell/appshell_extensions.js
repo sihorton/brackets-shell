@@ -179,7 +179,22 @@ native function sendToNode();
 appshell.sendToNode = function(str,callback) {
 	return sendToNode(callback,str);
 }
-
+native function sendToNode();
+var messageId=1;
+appshell.sendMessage = function(message,channel,target,callback) {
+	if (target == "backend" || target == "") {
+		var obj = {
+			channel:channel
+			,message:message
+			,messageId:messageId++
+		};
+		var str = JSON.stringify(obj);
+		return sendToNode(callback,str);
+	} else {
+		console.error("target unknown!");
+		//callback(
+	}
+}
     /**
       * Set window to have rounded corners.
       * http://bigdevblog.com/  Modifying Adobe brackets (CEF) to have rounded corners in windows

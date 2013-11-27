@@ -418,6 +418,9 @@ public:
                 return true;
             }
         } else if (message_name == "ShowDeveloperTools") {
+			handler->ShowDevTools(browser);
+            
+        } else if (message_name == "ShowDeveloperTools2") {
             // Parameters - none
             
             // The CEF-hosted dev tools do not work. Open in a separate browser window instead.
