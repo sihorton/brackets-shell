@@ -183,19 +183,23 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 
   // Populate the settings based on command line arguments.
   AppGetSettings(settings, app);
-
+  CefRefPtr<CefCommandLine> cmdLine = AppGetCommandLine();
+  
   
 	//si: read some json.
-	
-	// get exe filename, strip the .exe filename (and preceding "\") from the appPath
-	// and store in pathRoot2
 	wchar_t appPath2[MAX_PATH];
-	wchar_t *pathRoot2;
-	GetModuleFileName(NULL, appPath2, MAX_PATH);
-	pathRoot2 = wcsrchr(appPath2, '\\');
-	wcscpy(pathRoot2, L"\\Deskshell-Brackets.json");
-	char appPathJsonString[MAX_PATH];
-	wcstombs(appPathJsonString,appPath2,MAX_PATH);
+	if (cmdLine->HasSwitch(cefclient::kJSONConfig)) {
+	  wcscpy(appPath2, cmdLine->GetSwitchValue(cefclient::kJSONConfig).c_str());
+	} else {
+		// get exe filename, strip the .exe filename (and preceding "\") from the appPath
+		// and store in pathRoot2
+		wchar_t *pathRoot2;
+		GetModuleFileName(NULL, appPath2, MAX_PATH);
+		pathRoot2 = wcsrchr(appPath2, '\\');
+		wcscpy(pathRoot2, L"\\Deskshell-Brackets.json");
+		char appPathJsonString[MAX_PATH];
+		wcstombs(appPathJsonString,appPath2,MAX_PATH);
+	}
 	std::string s;
 	{
 		std::ifstream file (appPath2,std::ios::binary);
@@ -209,30 +213,18 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	JSONValue *config = JSON::Parse(s.c_str());
 	
 	// Did it go wrong?
+	bool configOk = false;
 	if (config != NULL)
 	{
-		OutputDebugString(L"config parse ok");
 		// Retrieve the main object
-		if (config->IsObject() == false)
-		{
-			OutputDebugString(L"The root element is not an object, did you change the example?\r\n");
-		}
-		else
+		if (config->IsObject() == true)
 		{
 			configRoot = config->AsObject();
-			
-			// Retrieving a string
-			if (configRoot.find(L"string_name") != configRoot.end() && configRoot[L"string_name"]->IsString())
-			{
-				OutputDebugString(L"string_name:\r\n");
-				OutputDebugString(L"------------\r\n");
-				OutputDebugString(configRoot[L"string_name"]->AsString().c_str());
-				OutputDebugString(L"\r\n\r\n");
-				OutputDebugString(configRoot[L"appLocation"]->AsString().c_str());
-				
-			}
+			configOk = true;
 		}
-	} else {
+	} 
+	if(!configOk) {
+		OutputDebugString(L"Error reading json config!\r\n");
 		const wchar_t* DEFAULT = L"{\"windowFrame\":true}"; 
 		
 		JSONValue *value = JSON::Parse( DEFAULT );
@@ -247,7 +239,6 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
   // Initialize CEF.
   CefInitialize(main_args, settings, app.get());
 
-  CefRefPtr<CefCommandLine> cmdLine = AppGetCommandLine();
   if (cmdLine->HasSwitch(cefclient::kStartupPath)) {
 	  wcscpy(szInitialUrl, cmdLine->GetSwitchValue(cefclient::kStartupPath).c_str());
   }
@@ -260,22 +251,26 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	wchar_t *pathRoot;
 	GetModuleFileName(NULL, appPath, MAX_PATH);
 
-	// Strip the .exe filename (and preceding "\") from the appPath
-	// and store in pathRoot
-	pathRoot = wcsrchr(appPath, '\\');
-
-	// Look for .\dev\src\index.html first
+	//try to boot off an app relative to the JSON file we are reading.
 	if (configRoot.find(L"appLocation") != configRoot.end() && configRoot[L"appLocation"]->IsString()) {	
+		pathRoot = wcsrchr(appPath2, '\\');
 		wcscpy(pathRoot, configRoot[L"appLocation"]->AsString().c_str());
+		// If the file exists, use it
+		if (GetFileAttributes(appPath2) != INVALID_FILE_ATTRIBUTES) {
+			wcscpy(szInitialUrl, appPath2);
+		}
 	} else {
+		//try to boot off an app relative to this binary.
+		// Strip the .exe filename (and preceding "\") from the appPath
+		pathRoot = wcsrchr(appPath, '\\');
 		wcscpy(pathRoot, L"\\..\\..\\deskshell-brackets-app\\index.htm");
-	
+		// If the file exists, use it
+		if (GetFileAttributes(appPath) != INVALID_FILE_ATTRIBUTES) {
+			wcscpy(szInitialUrl, appPath);
+		}
 	}
 	
-	// If the file exists, use it
-	if (GetFileAttributes(appPath) != INVALID_FILE_ATTRIBUTES) {
-		wcscpy(szInitialUrl, appPath);
-	}
+	
 
 	if (!wcslen(szInitialUrl)) {
 		// Look for .\www\index.html next

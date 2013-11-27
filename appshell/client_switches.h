@@ -11,7 +11,7 @@
 namespace cefclient {
 
 extern const char kStartupPath[];
-
+extern const char kJSONConfig[];
 // CefSettings attributes.
 extern const char kMultiThreadedMessageLoop[];
 extern const char kCachePath[];

@@ -7,7 +7,9 @@
 #include "client_switches.h"  // NOLINT(build/include)
 
 namespace cefclient {
-  
+//si:
+const char kJSONConfig[] = "json-config";
+
 const char kStartupPath[] = "startup-path";
 
 // CefSettings attributes.
