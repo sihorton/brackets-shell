@@ -28,6 +28,9 @@
 #include <vector>
 #include <cstdio>
 
+#include "client_handler.h"
+extern CefRefPtr<ClientHandler> g_handler;
+
 static std::string buffer("");
 static int commandCount = 0;
 
@@ -67,6 +70,13 @@ void processCommand (const std::string &command) {
             std::istringstream(args[2]) >> port;
             setNodeState(port);
         }
+		
+		if (args[1] == "console") {
+			g_handler->GetBrowser()->GetMainFrame()->ExecuteJavaScript("console.log('"+args[0]+":"+args[2]+"');","nodejs/cmd/console",0);
+		}
+		if (args[1] == "execjs") {
+			g_handler->GetBrowser()->GetMainFrame()->ExecuteJavaScript(args[2],"nodejs/call",0);
+		}
     }
     
     response = responseStream.str();

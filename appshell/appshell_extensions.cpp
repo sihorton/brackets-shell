@@ -26,6 +26,9 @@
 #include "native_menu_model.h"
 #include "appshell_node_process.h"
 
+#include "appshell_node_process_internal.h"
+
+
 #include <algorithm>
 
 extern std::vector<CefString> gDroppedFiles;
@@ -108,8 +111,11 @@ public:
             }
         } else if (message_name == "echo") {
                 responseArgs->SetString(2, argList->GetString(1));
-       
-		
+        } else if (message_name == "sendToNode") {
+			sendData(argList->GetString(1));
+			CefString m = "Sent";
+			responseArgs->SetString(2,"Sent Message");
+			responseArgs->SetString(3,argList->GetString(1));
 		} else if (message_name == "SetRoundedCorners") {
             // Parameters:
             //  0: int32 - callback id

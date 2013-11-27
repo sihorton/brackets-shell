@@ -175,6 +175,10 @@ native function callbackTest();
 appshell.callbackTest = function(str,callback) {
 	return callbackTest(callback,str);
 }
+native function sendToNode();
+appshell.sendToNode = function(str,callback) {
+	return sendToNode(callback,str);
+}
 
     /**
       * Set window to have rounded corners.
