@@ -1,5 +1,5 @@
 /*
- * File JSON.h part of the SimpleJSON Library - http://mjpa.in/json
+ * File JSON.h part of the SimpleJSON Library - http://github.com/MJPA/json
  *
  * Copyright (C) 2010 Mike Anchor
  *

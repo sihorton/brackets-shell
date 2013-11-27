@@ -41,12 +41,12 @@ BEGIN
     BEGIN
         BLOCK "040904E4"
         BEGIN
-            VALUE "CompanyName",      "brackets.io\0"
-            VALUE "FileDescription",  "\0"
-            VALUE "FileVersion",      "Sprint 35\0"
+            VALUE "CompanyName",      "deskshell\0"
+            VALUE "FileDescription",  "cef3\0"
+            VALUE "FileVersion",      "35\0"
             VALUE "ProductName",      APP_NAME "\0"
             VALUE "ProductVersion",   "\0"
-            VALUE "LegalCopyright",   "(c) 2012 Adobe Systems, Inc.\0"
+            VALUE "LegalCopyright",   "(c) 2013 sihorton\0"
         END
     END
 

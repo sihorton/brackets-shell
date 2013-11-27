@@ -99,8 +99,8 @@ module.exports = function (grunt) {
                         "src"       : [
                             "locales/**",
                             "node-core/**",
-                            "Brackets.exe",
-                            "Brackets-node.exe",
+                            "deskshell-cef3.exe",
+                            "deskshell-node.exe",
                             "cef.pak",
                             "devtools_resources.pak",
                             "icudt.dll",
@@ -133,8 +133,8 @@ module.exports = function (grunt) {
                             "locales/**",
                             "node-core/**",
                             "appshell*.png",
-                            "Brackets",
-                            "Brackets-node",
+                            "deskshell-cef3",
+                            "deskshell-node",
                             "cef.pak",
                             "devtools_resources.pak"
                         ],
@@ -144,8 +144,8 @@ module.exports = function (grunt) {
                         "expand"    : true,
                         "cwd"       : "installer/linux/debian/",
                         "src"       : [
-                            "brackets.desktop",
-                            "brackets"
+                            "cef3.desktop",
+                            "deskshell"
                         ],
                         "dest"      : "<%= build.staging %>"
                     }
@@ -187,7 +187,7 @@ module.exports = function (grunt) {
             }
         },
         "build": {
-            "name"              : "Deskshell-Brackets",//"Brackets",
+            "name"              : "deskshell-cef3",//"Brackets",
             "staging"           : staging
         },
         "git": {

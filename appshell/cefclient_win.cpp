@@ -188,32 +188,48 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
   
 	//si: read some json.
 	wchar_t appPath2[MAX_PATH];
+
+	wchar_t jsonPath[MAX_PATH];
+	wchar_t *jsonPathRoot;
 	if (cmdLine->HasSwitch(cefclient::kJSONConfig)) {
 	  wcscpy(appPath2, cmdLine->GetSwitchValue(cefclient::kJSONConfig).c_str());
+	  wcscpy(jsonPath, cmdLine->GetSwitchValue(cefclient::kJSONConfig).c_str());
+	  jsonPathRoot = wcsrchr(jsonPath, '\\');
+	  wcscpy(jsonPathRoot, L"\\");
 	} else {
 		// get exe filename, strip the .exe filename (and preceding "\") from the appPath
 		// and store in pathRoot2
 		wchar_t *pathRoot2;
 		GetModuleFileName(NULL, appPath2, MAX_PATH);
-		pathRoot2 = wcsrchr(appPath2, '\\');
-		wcscpy(pathRoot2, L"\\Deskshell-Brackets.json");
+		pathRoot2 = wcsrchr(appPath2, '.');
+		wcscpy(pathRoot2, L".json");
 		char appPathJsonString[MAX_PATH];
 		wcstombs(appPathJsonString,appPath2,MAX_PATH);
-	}
-	std::string s;
-	{
-		std::ifstream file (appPath2,std::ios::binary);
-		if (file) {
-				std::ostringstream os;
-				os << file.rdbuf();
-				s = os.str();
-		}
-	}
+		//wcstombs(appPathJsonString,jsonPath,MAX_PATH);
 
-	JSONValue *config = JSON::Parse(s.c_str());
-	
-	// Did it go wrong?
+		GetModuleFileName(NULL, jsonPath, MAX_PATH);
+		jsonPathRoot = wcsrchr(jsonPath, '\\');
+		wcscpy(jsonPathRoot, L"\\");
+	}
+	//wchar_t *jsonPathRoot = wcsrchr(jsonPath, '\\');
 	bool configOk = false;
+	JSONValue *config = NULL;
+	if (GetFileAttributes(appPath2) != INVALID_FILE_ATTRIBUTES) {
+			
+		std::string s;
+		{
+			std::ifstream file (appPath2,std::ios::binary);
+			if (file) {
+					std::ostringstream os;
+					os << file.rdbuf();
+					s = os.str();
+			}
+		}
+
+		config = JSON::Parse(s.c_str());
+	} 
+	// Did it go wrong?
+	
 	if (config != NULL)
 	{
 		// Retrieve the main object
@@ -221,13 +237,20 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 		{
 			configRoot = config->AsObject();
 			configOk = true;
+			
+			if (configRoot.find(L"appDir") != configRoot.end() && configRoot[L"appDir"]->IsString()) {	
+				//appDir is abs location that all json paths are relative to.
+				//normally you don't set it and it automatically has the directory the json file is located in.
+			} else {
+				configRoot[L"appDir"] = new JSONValue(jsonPath);
+			}
 		}
 	} 
 	if(!configOk) {
 		OutputDebugString(L"Error reading json config!\r\n");
 		const wchar_t* DEFAULT = L"{\"windowFrame\":true}"; 
 		
-		JSONValue *value = JSON::Parse( DEFAULT );
+		config = JSON::Parse( DEFAULT );
 		configRoot = config->AsObject();
 	}
 
@@ -236,13 +259,62 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	  CefString(&settings.cache_path) = AppGetCachePath();
   }
 
+  //set settings from the JSON.
+  if (configRoot.find(L"kCachePath") != configRoot.end() && configRoot[L"kCachePath"]->IsString()) {	
+		wchar_t relPath2[MAX_PATH];
+		wchar_t *relPath2Ptr;
+		wcscpy(relPath2, jsonPath);
+		relPath2Ptr = wcsncat(relPath2,configRoot[L"kCachePath"]->AsString().c_str(),MAX_PATH);
+		if (GetFileAttributes(relPath2) != INVALID_FILE_ATTRIBUTES) {
+			CefString(&settings.cache_path) = relPath2;
+		}
+  }
+  if (configRoot.find(L"kUserAgent") != configRoot.end() && configRoot[L"kUserAgent"]->IsString()) {	
+	  CefString(&settings.user_agent) = configRoot[L"kUserAgent"]->AsString().c_str();
+  }
+  if (configRoot.find(L"kDisableStandardCommandArgs") != configRoot.end() && configRoot[L"kDisableStandardCommandArgs"]->IsBool()) {	
+	  settings.command_line_args_disabled = configRoot[L"kDisableStandardCommandArgs"]->AsBool();
+  }
+  if (configRoot.find(L"kIgnoreCertificateErrors") != configRoot.end() && configRoot[L"kIgnoreCertificateErrors"]->IsBool()) {	
+	  settings.ignore_certificate_errors = configRoot[L"kIgnoreCertificateErrors"]->AsBool();
+  }
+  if (configRoot.find(L"kjsFlags") != configRoot.end() && configRoot[L"kjsFlags"]->IsString()) {	
+	  CefString(&settings.javascript_flags) = configRoot[L"kjsFlags"]->AsString().c_str();
+  }
+   if (configRoot.find(L"klogFile") != configRoot.end() && configRoot[L"klogFile"]->IsString()) {	
+	  //CefString(&settings.log_file) = configRoot[L"klogFile"]->AsString().c_str();
+	  wchar_t relPath3[MAX_PATH];
+		wchar_t *relPath3Ptr;
+		wcscpy(relPath3, jsonPath);
+		relPath3Ptr = wcsncat(relPath3,configRoot[L"klogFile"]->AsString().c_str(),MAX_PATH);
+		CefString(&settings.log_file) = relPath3;
+		
+  }
+  //if (configRoot.find(L"klogSeverity") != configRoot.end() && configRoot[L"klogSeverity"]->IsNumber()) {	
+//	  settings.log_severity = (int)configRoot[L"klogSeverity"]->AsNumber();
+//  }
+  if (configRoot.find(L"kMultiThreadedMessageLoop") != configRoot.end() && configRoot[L"kMultiThreadedMessageLoop"]->IsBool()) {	
+	settings.multi_threaded_message_loop = configRoot[L"kMultiThreadedMessageLoop"]->AsBool();
+  }
+  if (configRoot.find(L"kPersistSessionCookies") != configRoot.end() && configRoot[L"kPersistSessionCookies"]->IsBool()) {	
+	  settings.persist_session_cookies = configRoot[L"kPersistSessionCookies"]->AsBool();
+  }
+  if (configRoot.find(L"kProductVersion") != configRoot.end() && configRoot[L"kProductVersion"]->IsString()) {	
+	  CefString(&settings.product_version) = configRoot[L"kProductVersion"]->AsString().c_str();
+  }
+  if (configRoot.find(L"kRemoteDebugPort") != configRoot.end() && configRoot[L"kRemoteDebugPort"]->IsNumber()) {	
+	  settings.remote_debugging_port = (int)configRoot[L"kRemoteDebugPort"]->AsNumber();
+  }
+  if (configRoot.find(L"kSingleProcess") != configRoot.end() && configRoot[L"kSingleProcess"]->IsBool()) {	
+	  settings.single_process = configRoot[L"kSingleProcess"]->AsBool();
+  }
+ 
   // Initialize CEF.
   CefInitialize(main_args, settings, app.get());
 
   if (cmdLine->HasSwitch(cefclient::kStartupPath)) {
 	  wcscpy(szInitialUrl, cmdLine->GetSwitchValue(cefclient::kStartupPath).c_str());
-  }
-  else {
+  }  else {
 	// If the shift key is not pressed, look for the index.html file 
 	if (GetAsyncKeyState(VK_SHIFT) == 0) {
 	// Get the full pathname for the app. We look for the index.html
@@ -253,11 +325,12 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 
 	//try to boot off an app relative to the JSON file we are reading.
 	if (configRoot.find(L"appLocation") != configRoot.end() && configRoot[L"appLocation"]->IsString()) {	
-		pathRoot = wcsrchr(appPath2, '\\');
-		wcscpy(pathRoot, configRoot[L"appLocation"]->AsString().c_str());
-		// If the file exists, use it
-		if (GetFileAttributes(appPath2) != INVALID_FILE_ATTRIBUTES) {
-			wcscpy(szInitialUrl, appPath2);
+		wchar_t relPath1[MAX_PATH];
+		wchar_t *relPath1Ptr;
+		wcscpy(relPath1, jsonPath);
+		relPath1Ptr = wcsncat(relPath1,configRoot[L"appLocation"]->AsString().c_str(),MAX_PATH);
+		if (GetFileAttributes(relPath1) != INVALID_FILE_ATTRIBUTES) {
+			wcscpy(szInitialUrl, relPath1);
 		}
 	} else {
 		//try to boot off an app relative to this binary.
@@ -276,7 +349,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 		// Look for .\www\index.html next
 		wcscpy(pathRoot, L"\\www\\index.html");
 		if (GetFileAttributes(appPath) != INVALID_FILE_ATTRIBUTES) {
-		wcscpy(szInitialUrl, appPath);
+			wcscpy(szInitialUrl, appPath);
 		}
 	}
 	}

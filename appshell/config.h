@@ -29,11 +29,11 @@
 // Name of group (if any) that application prefs/settings/etc. are stored under
 // This must be an empty string (for no group), or a string that ends with "\\"
 #define GROUP_NAME L""
-#define APP_NAME L"Deskshell-Brackets"
+#define APP_NAME L"deskshell-cef3"
 #define WINDOW_TITLE APP_NAME
 
 // Paths for node resources are relative to the location of the appshell executable
-#define NODE_EXECUTABLE_PATH "Brackets-node.exe"
+#define NODE_EXECUTABLE_PATH "cef3-node.exe"
 #define NODE_CORE_PATH "node-core"
 #define FIRST_INSTANCE_MUTEX_NAME	(APP_NAME L".Shell.Instance")
 #endif
@@ -41,22 +41,22 @@
 // Name of group (if any) that application prefs/settings/etc. are stored under
 // This must be an empty string (for no group), or a string that ends with "/"
 #define GROUP_NAME @""
-#define APP_NAME @"Deskshell-Brackets"
+#define APP_NAME @"deskshell-cef3"
 #define WINDOW_TITLE APP_NAME
 
 // Paths for node resources are relative to the bundle path
-#define NODE_EXECUTABLE_PATH @"/Contents/MacOS/Brackets-node"
+#define NODE_EXECUTABLE_PATH @"/Contents/MacOS/cef3-node"
 #define NODE_CORE_PATH @"/Contents/node-core"
 
 #endif
 #ifdef OS_LINUX
 // TODO linux preferences
 //#define GROUP_NAME @""
-//#define APP_NAME @"Brackets"
+//#define APP_NAME @"deskshell-cef3"
 //#define WINDOW_TITLE APP_NAME
 
 // Path for node resources is in dependencies dir and relative to the location of the appshell executable
-#define NODE_EXECUTABLE_PATH "Brackets-node"
+#define NODE_EXECUTABLE_PATH "cef3-node"
 #define NODE_CORE_PATH "node-core"
 
 #endif

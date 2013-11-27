@@ -1,5 +1,5 @@
 {
   'variables': {
-    'appname': "Deskshell-Brackets"
+    'appname': "deskshell-cef3"
   }
 }

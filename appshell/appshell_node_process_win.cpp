@@ -27,6 +27,9 @@
 
 #include "appshell_node_process.h"
 #include "appshell_node_process_internal.h"
+//si
+#include "JSON.h" 
+extern JSONObject configRoot;
 
 #include <strsafe.h> // must be included after STL headers
 
@@ -35,7 +38,10 @@
 #endif
 #include "config.h"
 
+
+
 #define BRACKETS_NODE_BUFFER_SIZE 4096
+
 
 static HANDLE g_hChildStd_IN_Rd = NULL;
 static HANDLE g_hChildStd_IN_Wr = NULL;
@@ -133,9 +139,19 @@ DWORD WINAPI NodeThread(LPVOID lpParam) {
 				return 0;
 			}
 			PathRemoveFileSpec(executablePath);
-			StringCchCopy(scriptPath, MAX_PATH, executablePath);
-			PathAppend(executablePath, TEXT(NODE_EXECUTABLE_PATH));
-			PathAppend(scriptPath, TEXT(NODE_CORE_PATH));
+			if (configRoot.find(L"kNodeScript") != configRoot.end() && configRoot[L"kNodeScript"]->IsString()) {	
+				StringCchCopy(scriptPath, MAX_PATH, executablePath);
+				PathAppend(executablePath, TEXT(NODE_EXECUTABLE_PATH));
+				
+				StringCchCopy(scriptPath, MAX_PATH, configRoot[L"appDir"]->AsString().c_str());
+				//PathAppend(scriptPath, configRoot[L"appDir"]->AsString().c_str());
+				PathAppend(scriptPath, configRoot[L"kNodeScript"]->AsString().c_str());
+
+			} else {
+				StringCchCopy(scriptPath, MAX_PATH, executablePath);
+				PathAppend(executablePath, TEXT(NODE_EXECUTABLE_PATH));
+				PathAppend(scriptPath, TEXT(NODE_CORE_PATH));
+			}
 
 			StringCchCopy(commandLine, BRACKETS_NODE_BUFFER_SIZE, TEXT("\""));
 			StringCchCat(commandLine, BRACKETS_NODE_BUFFER_SIZE, executablePath);
@@ -198,18 +214,29 @@ DWORD WINAPI NodeThread(LPVOID lpParam) {
 			siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
 
 			// Create the child process. 
-
-			bSuccess = CreateProcess(NULL, 
-				commandLine,       // command line 
-				NULL,              // process security attributes 
-				NULL,              // primary thread security attributes 
-				TRUE,              // handles are inherited 
-				CREATE_NO_WINDOW,  // creation flags (change to 0 to see a window for the launched process) 
-				NULL,              // use parent's environment 
-				NULL,              // use parent's current directory 
-				&siStartInfo,      // STARTUPINFO pointer 
-				&piProcInfo);      // receives PROCESS_INFORMATION 
-
+			if (configRoot.find(L"kShowNodeConsole") != configRoot.end() && configRoot[L"kShowNodeConsole"]->IsBool() && configRoot[L"kShowNodeConsole"]->AsBool()) {	
+				bSuccess = CreateProcess(NULL, 
+					commandLine,       // command line 
+					NULL,              // process security attributes 
+					NULL,              // primary thread security attributes 
+					TRUE,              // handles are inherited 
+					0,  // creation flags (change to 0 to see a window for the launched process) 
+					NULL,              // use parent's environment 
+					NULL,              // use parent's current directory 
+					&siStartInfo,      // STARTUPINFO pointer 
+					&piProcInfo);      // receives PROCESS_INFORMATION 
+			} else {
+				bSuccess = CreateProcess(NULL, 
+					commandLine,       // command line 
+					NULL,              // process security attributes 
+					NULL,              // primary thread security attributes 
+					TRUE,              // handles are inherited 
+					CREATE_NO_WINDOW,  // creation flags (change to 0 to see a window for the launched process) 
+					NULL,              // use parent's environment 
+					NULL,              // use parent's current directory 
+					&siStartInfo,      // STARTUPINFO pointer 
+					&piProcInfo);      // receives PROCESS_INFORMATION 
+			}
 			nodeState = BRACKETS_NODE_PORT_NOT_YET_SET;
 
 			// Done launching the process, so release the mutex and start reading
